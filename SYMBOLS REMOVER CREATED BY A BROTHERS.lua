@@ -1,1 +1,338 @@
-require "import" activity = this _p="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LzjqPTI5PzYuHC83OUAv6gfqPjw/LwXqLQ83OTQz6gfqLQ83OTQz6vXq++ovOC7U6urq6urq6urq6urq6urq6i82PS8zMOotMis8BDcrPi0y8uzvLuzz6j4yLzjq1Orq6urq6urq6urq6urq6urq6urqMzDqNS8vOhg/NywvPD3qPjIvOOo9Mjk/Ni4cLzc5QC/qB+o+PD8vBeotGD836gfqLRg/N+r16vvqLzgu1Orq6urq6urq6urq6urq6uovNj0vMzDqLTIrPOoHB+rs+OzqPjIvOOrU6urq6urq6urq6urq6urq6urq6uozMOo1Ly86HTovLTMrNuo+Mi846j0yOT82LhwvNzlAL+oH6j48Py8F6i0OOT7qB+otDjk+6vXq++ovOC7U6urq6urq6urq6urq6urq6i82PS8zMOotMis86gcH6uz27Oo5POotMis86gcH6uyiVuzqPjIvOOrU6urq6urq6urq6urq6urq6urq6uozMOo1Ly86HTovLTMrNuo+Mi846j0yOT82LhwvNzlAL+oH6j48Py8F6i0NOTc3K+oH6i0NOTc3K+r16vvqLzgu1Orq6urq6urq6urq6urq6uovNj0vMzDqLTIrPOoHB+rsJjjs6jk86i0yKzzqBwfq7CY87Oo+Mi846tTq6urq6urq6urq6urq6urq6urq6jMw6jUvLzodOi8tMys26j4yLzjqPTI5PzYuHC83OUAv6gfqPjw/LwXqLRYzOC/qB+otFjM4L+r16vvqLzgu1Orq6urq6urq6urq6urq6uovNj0vMzDqLTIrPAQ3Kz4tMvLsJe8rJvz7APcm/PsDJvsA+/cm+wP7J+zz6jk86i0yKzzqBwfq7Ors6j4yLzjq1Orq6urq6urq6urq6urq6urq6urqPTI5PzYuHC83OUAv6gfqMCs2PS/U6urq6urq6urq6urq6urq6i82PS/q1Orq6urq6urq6urq6urq6urq6urqMzDqNS8vOh1DNyw5Nj3qPjIvOOo9Mjk/Ni4cLzc5QC/qB+o+PD8vBeotHUM36gfqLR1DN+r16vvqLzgu1Orq6urq6urq6urq6urq6uovOC7U1Orq6urq6urq6urq6urq6uozMOo4OT7qPTI5PzYuHC83OUAv6j4yLzjqPissNi/4Mzg9Lzw+8jwvPT82Ph4rLDYv9uotMis88+ovOC7U6urq6urq6urq6urqLzgu1Orq6urq6urq6urq6tTq6urq6urq6urq6uo2OS0rNuotNi8rOB4vQj7qB+o+Kyw2L/gtOTgtKz7yPC89PzY+HissNi/z1Orq6urq6urq6urq6i02Lys4Hi9CPuoH6i02Lys4Hi9CPgQxPT8s8uwo6vXs9urs7PMEMT0/LPLs6vXu7Pbq7Ozz1NTq6urq6urq6urq6uo+OT4rNg45Pj326j45Pis2DTk3Nys99uo+OT4rNhYzOC899uo+OT4rNg83OTQzPfbqPjk+KzYYPzcsLzw99uo+OT4rNh1DNyw5Nj3qB+o+OT4rNg45Pj31LQ45PvbqPjk+KzYNOTc3Kz31LQ05Nzcr9uo+OT4rNhYzOC899S0WMzgv9uo+OT4rNg83OTQzPfUtDzc5NDP26j45Pis2GD83LC88PfUtGD839uo+OT4rNh1DNyw5Nj31LR1DN9Tq6urq6urq6urq6uo8Lzc5QC8uHT4rPj89Hi9CPvg9Lz4eL0I+8j0+PDM4MfgwOTw3Kz7y7BwvNzlALy7q7y7qPUM3LDk2PervLuouOT496u8u6i05NzcrPervLuo2MzgvPervLuo4PzcsLzw96u8u6i83OTQzPez26j45Pis2HUM3LDk2PfbqPjk+KzYOOT499uo+OT4rNg05NzcrPfbqPjk+KzYWMzgvPfbqPjk+KzYYPzcsLzw99uo+OT4rNg83OTQzPfPz1Orq6urq6urq6urq6tTq6urq6urq6urq6uovLjM+DDlC+D0vPh4vQj7yLTYvKzgeL0I+89Tq6urq6urq6urq6uotN/g9Lz4aPDM3KzxDDTYzOvINNjM6Dis+K/g4L0EaNiszOB4vQj7y7C02Lys47PbqLTYvKzgeL0I+8/PU6urq6urq6urq6urq1Orq6urq6urq6urq6jMw6is4ODk/OC0vHT4rPi/qPjIvONTq6urq6urq6urq6urq6urqNjktKzbqPC86OTw+6gfqRUfU6urq6urq6urq6urq6urq6jMw6jUvLzoPNzk0M+orOC7qODk+6j0vPT0zOTgcLzo5PD4vLvgvNzk0M+o+Mi841Orq6urq6urq6urq6urq6urq6urqPissNi/4Mzg9Lzw+8jwvOjk8PvbqLQ83OTQz6vj46uzqLzc5NDM97PPU6urq6urq6urq6urq6urq6urq6uo9Lz09Mzk4HC86OTw+Ly74Lzc5NDPqB+o+PD8v1Orq6urq6urq6urq6urq6uovOC7U6urq6urq6urq6urq6urq6jMw6jUvLzoYPzcsLzw96is4Luo4OT7qPS89PTM5OBwvOjk8Pi8u+Dg/N+o+Mi841Orq6urq6urq6urq6urq6urq6urqPissNi/4Mzg9Lzw+8jwvOjk8PvbqLRg/N+r4+Ors6jg/NywvPD3s89Tq6urq6urq6urq6urq6urq6urq6j0vPT0zOTgcLzo5PD4vLvg4PzfqB+o+PD8v1Orq6urq6urq6urq6urq6uovOC7U6urq6urq6urq6urq6urq6jMw6jUvLzodQzcsOTY96is4Luo4OT7qPS89PTM5OBwvOjk8Pi8u+D1DN+o+Mi841Orq6urq6urq6urq6urq6urq6urqPissNi/4Mzg9Lzw+8jwvOjk8PvbqLR1DN+r4+Ors6j1DNyw5Nj3s89Tq6urq6urq6urq6urq6urq6urq6j0vPT0zOTgcLzo5PD4vLvg9QzfqB+o+PD8v1Orq6urq6urq6urq6urq6uovOC7U6urq6urq6urq6urq6urq6jMw6jUvLzodOi8tMys26j4yLzjU6urq6urq6urq6urq6urq6urq6uozMOo4OT7qPS89PTM5OBwvOjk8Pi8u+C45Puo+Mi846j4rLDYv+DM4PS88PvI8Lzo5PD726i0OOT7q+Pjq7OouOT497PMF6j0vPT0zOTgcLzo5PD4vLvguOT7qB+o+PD8v6i84LtTq6urq6urq6urq6urq6urq6urq6jMw6jg5Puo9Lz09Mzk4HC86OTw+Ly74LTk3NyvqPjIvOOo+Kyw2L/gzOD0vPD7yPC86OTw+9uotDTk3Nyvq+Pjq7OotOTc3Kz3s8wXqPS89PTM5OBwvOjk8Pi8u+C05Nzcr6gfqPjw/L+ovOC7U6urq6urq6urq6urq6urq6urq6uozMOo4OT7qPS89PTM5OBwvOjk8Pi8u+DYzOC/qPjIvOOo+Kyw2L/gzOD0vPD7yPC86OTw+9uotFjM4L+r4+Ors6jYzOC897PMF6j0vPT0zOTgcLzo5PD4vLvg2Mzgv6gfqPjw/L+ovOC7U6urq6urq6urq6urq6urq6i84LtTq6urq6urq6urq6urq6urq1Orq6urq6urq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" _k="1234" _s_a=202 _b="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/" _m={} for i=1,#_b do _m[_b:sub(i,i)]=i-1 end _m["="]=0;function _d(s)s=s:gsub("%s","")local r={}local i=1 while i<=#s do local c1=_m[s:sub(i,i)]local c2=_m[s:sub(i+1,i+1)]local c3=_m[s:sub(i+2,i+2)]local c4=_m[s:sub(i+3,i+3)]if c1==nil or c2==nil or c3==nil or c4==nil then error("B64_INV")end local b1=(c1*4)+math.floor(c2/16)local b2=((c2%16)*16)+math.floor(c3/4)local b3=((c3%4)*64)+c4 r[#r+1]=string.char(b1)if s:sub(i+2,i+2)~="=" then r[#r+1]=string.char(b2)end if s:sub(i+3,i+3)~="=" then r[#r+1]=string.char(b3)end i=i+4 end return table.concat(r)end;function _ce(t,s)local r={}for i=1,#t do r[#r+1]=string.char((string.byte(t,i)+s)%256)end return table.concat(r)end;function _cd(t,s)local r={}for i=1,#t do r[#r+1]=string.char((string.byte(t,i)-s+256)%256)end return table.concat(r)end; local _o_b64,_err_d=_d(_p);if not _o_b64 then error("B64_DECODE_FAIL:"..(_err_d or "UKN_ERR"))end; local _o=_cd(_o_b64,_s_a); local _ok,_res=pcall(load,_o,"@e_final","bt",_G);if not _ok then error("LOAD_FAIL:".._res)end;_ok,_res=pcall(_res);if not _ok then error("EXEC_FAIL:".._res)end;
+require "import"
+import "android.widget.*"
+import "android.view.*"
+import "android.app.*"
+import "android.content.*"
+import "android.os.*"
+import "android.text.*"
+import "android.graphics.Typeface"
+import "android.net.Uri"
+
+-- سیشن ویری ایبلز
+local totalDots, totalCommas, totalLines, totalEmojis, totalNumbers, totalSymbols = 0, 0, 0, 0, 0, 0
+local lastCleanText = ""
+local lastSettingsHash = ""
+-- اناؤنسمنٹ ٹریکر
+local sessionReported = {emoji=false, num=false, sym=false, dot=false, comma=false, line=false}
+
+local function showSymbolRemover()
+    local cm = service.getSystemService(Context.CLIPBOARD_SERVICE)
+    local pref = service.getSharedPreferences("A_BROTHERS_PREFS", Context.MODE_PRIVATE)
+    local editPref = pref.edit()
+    
+    local keepSpecial = pref.getBoolean("keep_special_state", false)
+    local keepEmoji = pref.getBoolean("keep_emoji_state", true)
+    local keepNumbers = pref.getBoolean("keep_numbers_state", true)
+    local keepSymbols = pref.getBoolean("keep_symbols_state", true)
+    local announceState = pref.getBoolean("announce_state", true)
+    local masterState = pref.getBoolean("master_state", true)
+    
+    local scrollView = ScrollView(service)
+    scrollView.setFillViewport(true)
+    
+    local mainLayout = LinearLayout(service)
+    mainLayout.setOrientation(LinearLayout.VERTICAL)
+    mainLayout.setPadding(35, 35, 35, 35)
+    mainLayout.setBackgroundColor(0xFFFFFFFF)
+    scrollView.addView(mainLayout)
+
+    local titleText = TextView(service)
+    titleText.setText("SYMBOLS REMOVER CREATED BY A BROTHERS")
+    titleText.setGravity(Gravity.CENTER)
+    titleText.setTextSize(18)
+    titleText.setTextColor(0xFF000000)
+    titleText.setTypeface(Typeface.DEFAULT_BOLD)
+    mainLayout.addView(titleText)
+
+    local editBox = EditText(service)
+    editBox.setHint("Paste or type text here...")
+    editBox.setGravity(Gravity.TOP)
+    editBox.setBackgroundColor(0xFFF5F5F5)
+    editBox.setMinLines(10)
+    editBox.setHorizontallyScrolling(false)
+    editBox.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
+    
+    local lpEdit = LinearLayout.LayoutParams(-1, -2)
+    lpEdit.setMargins(0, 10, 0, 5)
+    editBox.setLayoutParams(lpEdit)
+    mainLayout.addView(editBox)
+
+    local infoLayout = LinearLayout(service)
+    infoLayout.setOrientation(LinearLayout.HORIZONTAL)
+    mainLayout.addView(infoLayout)
+
+    local limitText = TextView(service)
+    limitText.setText("0 / 20000")
+    limitText.setTextColor(0xFF777777)
+    limitText.setPadding(0, 0, 10, 0)
+    infoLayout.addView(limitText)
+
+    local removedStatusText = TextView(service)
+    removedStatusText.setText("Removed 0 symbols 0 dots 0 commas 0 lines 0 numbers 0 emojis")
+    removedStatusText.setTextColor(0xFFFF5722)
+    removedStatusText.setTextSize(10)
+    removedStatusText.setTypeface(Typeface.DEFAULT_BOLD)
+    infoLayout.addView(removedStatusText)
+
+    local function updateCounts()
+        local txt = tostring(editBox.getText())
+        limitText.setText(string.format("%d / 20000", utf8.len(txt) or 0))
+    end
+
+    editBox.addTextChangedListener(TextWatcher{onTextChanged = function() updateCounts() end})
+
+    local function addBtn(text, color)
+        local b = Button(service)
+        b.setText(text)
+        b.setBackgroundColor(color)
+        b.setTextColor(0xFFFFFFFF)
+        local lpBtn = LinearLayout.LayoutParams(-1, -2)
+        lpBtn.setMargins(0, 5, 0, 5)
+        b.setLayoutParams(lpBtn)
+        mainLayout.addView(b)
+        return b
+    end
+
+    addBtn("Paste Text", 0xFF4CAF50).onClick = function()
+        local clip = cm.getPrimaryClip()
+        if clip and clip.getItemCount() > 0 then
+            editBox.setText(tostring(clip.getItemAt(0).getText()))
+            sessionReported = {emoji=false, num=false, sym=false, dot=false, comma=false, line=false}
+            service.speak("Pasted")
+        end
+    end
+    
+    local btnToggle = addBtn("", 0xFFFF9800)
+    local btnEmojiToggle = addBtn("", 0xFF00BCD4)
+    local btnSymToggle = addBtn("", 0xFF009688)
+    local btnNumToggle = addBtn("", 0xFF3F51B5)
+    local btnMaster = addBtn("REMOVE EMOJIS NUMBERS AND SYMBOLS", 0xFF673AB7) 
+
+    local function refreshToggle()
+        btnToggle.setText(keepSpecial and "REMOVE DOTS COMMAS AND LINES ON" or "REMOVE DOTS COMMAS AND LINES OFF")
+        btnToggle.setBackgroundColor(keepSpecial and 0xFFE65100 or 0xFFFF9800)
+    end
+
+    local function refreshEmojiToggle()
+        btnEmojiToggle.setText(keepEmoji and "REMOVE EMOJIS ON" or "REMOVE EMOJIS OFF")
+        btnEmojiToggle.setBackgroundColor(keepEmoji and 0xFF0097A7 or 0xFF00BCD4)
+    end
+
+    local function refreshSymToggle()
+        btnSymToggle.setText(keepSymbols and "REMOVE SYMBOLS ON" or "REMOVE SYMBOLS OFF")
+        btnSymToggle.setBackgroundColor(keepSymbols and 0xFF00796B or 0xFF009688)
+    end
+
+    local function refreshNumToggle()
+        btnNumToggle.setText(keepNumbers and "REMOVE ALL NUMBERS ON" or "REMOVE ALL NUMBERS OFF")
+        btnNumToggle.setBackgroundColor(keepNumbers and 0xFF1A237E or 0xFF3F51B5)
+    end
+
+    local function refreshMaster()
+        btnMaster.setText("REMOVE EMOJIS NUMBERS AND SYMBOLS " .. (masterState and "ON" or "OFF"))
+        btnMaster.setBackgroundColor(masterState and 0xFF4527A0 or 0xFF673AB7)
+    end
+
+    refreshToggle()
+    refreshEmojiToggle()
+    refreshSymToggle()
+    refreshNumToggle()
+    refreshMaster()
+
+    local btnAnnounceToggle = addBtn("", 0xFF795548)
+    local function refreshAnnounceToggle()
+        btnAnnounceToggle.setText(announceState and "VOICE REPORT MODE ON" or "VOICE REPORT MODE OFF")
+        btnAnnounceToggle.setBackgroundColor(announceState and 0xFF4E342E or 0xFF795548)
+    end
+    refreshAnnounceToggle()
+
+    btnToggle.onClick = function()
+        keepSpecial = not keepSpecial
+        editPref.putBoolean("keep_special_state", keepSpecial).commit()
+        refreshToggle()
+        service.speak(keepSpecial and "Special removal enabled" or "Special removal disabled")
+    end
+
+    btnEmojiToggle.onClick = function()
+        keepEmoji = not keepEmoji
+        editPref.putBoolean("keep_emoji_state", keepEmoji).commit()
+        refreshEmojiToggle()
+        service.speak(keepEmoji and "Emoji removal enabled" or "Emoji removal disabled")
+    end
+
+    btnSymToggle.onClick = function()
+        keepSymbols = not keepSymbols
+        editPref.putBoolean("keep_symbols_state", keepSymbols).commit()
+        refreshSymToggle()
+        service.speak(keepSymbols and "Symbols removal enabled" or "Symbols removal disabled")
+    end
+
+    btnNumToggle.onClick = function()
+        keepNumbers = not keepNumbers
+        editPref.putBoolean("keep_numbers_state", keepNumbers).commit()
+        refreshNumToggle()
+        service.speak(keepNumbers and "Numbers removal enabled" or "Numbers removal disabled")
+    end
+
+    btnMaster.onClick = function()
+        masterState = not masterState
+        keepEmoji, keepNumbers, keepSymbols = masterState, masterState, masterState
+        editPref.putBoolean("master_state", masterState)
+        editPref.putBoolean("keep_emoji_state", keepEmoji)
+        editPref.putBoolean("keep_numbers_state", keepNumbers)
+        editPref.putBoolean("keep_symbols_state", keepSymbols).commit()
+        refreshEmojiToggle()
+        refreshNumToggle()
+        refreshSymToggle()
+        refreshMaster()
+        service.speak(masterState and "Master removal enabled" or "Master removal disabled")
+    end
+
+    btnAnnounceToggle.onClick = function()
+        announceState = not announceState
+        editPref.putBoolean("announce_state", announceState).commit()
+        refreshAnnounceToggle()
+        service.speak(announceState and "Voice report enabled" or "Voice report disabled")
+    end
+
+    local btnClean = addBtn("Deep Clean and Copy", 0xFF2196F3)
+    local btnClear = addBtn("CLEAR TEXT AND RESET STATS", 0xFFF44336)
+    local btnAbout = addBtn("About", 0xFF9C27B0)
+    local btnHelp = addBtn("Help and Feedback", 0xFF25D366)
+    local btnExit = addBtn("EXIT", 0xFF607D8B)
+
+    local dialog = AlertDialog.Builder(service).setView(scrollView).setCancelable(false).create()
+    dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY)
+    dialog.show()
+
+    btnClean.onClick = function()
+        local rawText = tostring(editBox.getText())
+        if rawText == "" then service.speak("Text box is empty") return end
+
+        if not (keepSpecial or keepEmoji or keepNumbers or keepSymbols) then
+            service.speak("Please turn on at least one option first")
+            return
+        end
+
+        local currentSettings = tostring(keepSpecial)..tostring(keepEmoji)..tostring(keepNumbers)..tostring(keepSymbols)
+        
+        local needsReport = false
+        if keepEmoji and not sessionReported.emoji then needsReport = true end
+        if keepNumbers and not sessionReported.num then needsReport = true end
+        if keepSymbols and not sessionReported.sym then needsReport = true end
+        if keepSpecial and (not sessionReported.dot or not sessionReported.comma or not sessionReported.line) then needsReport = true end
+
+        if rawText == lastCleanText and currentSettings == lastSettingsHash and not needsReport then
+            service.speak("Already clean")
+            cm.setPrimaryClip(ClipData.newPlainText("clean", rawText))
+            return
+        end
+
+        service.speak("Scanning")
+        task(400, function()
+            local resultTable = {}
+            local cDot, cComma, cLine, cEmoji, cNum, cSym = 0, 0, 0, 0, 0, 0
+            
+            for char in rawText:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+                local shouldRemove = false
+                local isEmoji = char:match("[\240-\243][\128-\191][\128-\191][\128-\191]") or char:match("[\226-\227][\128-\191][\128-\191]")
+                
+                if isEmoji then 
+                    if keepEmoji then shouldRemove = true; cEmoji = cEmoji + 1 end
+                elseif char:match("%d") then 
+                    if keepNumbers then shouldRemove = true; cNum = cNum + 1 end
+                elseif char == "." then 
+                    if keepSpecial then shouldRemove = true; cDot = cDot + 1 end
+                elseif char == "," or char == "،" then 
+                    if keepSpecial then shouldRemove = true; cComma = cComma + 1 end
+                elseif char == "\n" or char == "\r" then 
+                    if keepSpecial then shouldRemove = true; cLine = cLine + 1 end
+                elseif char:match("[%a\216-\219\161-\191]") or char == " " then 
+                    shouldRemove = false
+                else 
+                    if keepSymbols then shouldRemove = true; cSym = cSym + 1 end
+                end
+
+                if not shouldRemove then table.insert(resultTable, char) end
+            end
+            
+            local cleanText = table.concat(resultTable)
+            cleanText = cleanText:gsub("^ +", ""):gsub(" +$", "")
+
+            totalDots, totalCommas, totalLines, totalEmojis, totalNumbers, totalSymbols = totalDots+cDot, totalCommas+cComma, totalLines+cLine, totalEmojis+cEmoji, totalNumbers+cNum, totalSymbols+cSym
+            removedStatusText.setText(string.format("Removed %d symbols %d dots %d commas %d lines %d numbers %d emojis", totalSymbols, totalDots, totalCommas, totalLines, totalNumbers, totalEmojis))
+            
+            editBox.setText(cleanText)
+            cm.setPrimaryClip(ClipData.newPlainText("clean", cleanText))
+            
+            if announceState then
+                local report = {}
+                if keepEmoji and not sessionReported.emoji then
+                    table.insert(report, cEmoji .. " emojis")
+                    sessionReported.emoji = true
+                end
+                if keepNumbers and not sessionReported.num then
+                    table.insert(report, cNum .. " numbers")
+                    sessionReported.num = true
+                end
+                if keepSymbols and not sessionReported.sym then
+                    table.insert(report, cSym .. " symbols")
+                    sessionReported.sym = true
+                end
+                if keepSpecial then
+                    if not sessionReported.dot then table.insert(report, cDot .. " dots"); sessionReported.dot = true end
+                    if not sessionReported.comma then table.insert(report, cComma .. " commas"); sessionReported.comma = true end
+                    if not sessionReported.line then table.insert(report, cLine .. " lines"); sessionReported.line = true end
+                end
+                
+                if #report > 0 then
+                    local finalMsg = "Text cleaning successfully. " .. table.concat(report, ", ") .. " removed. Text copied to clipboard successfully"
+                    service.speak(finalMsg)
+                else
+                    service.speak("Already clean. Text copied to clipboard successfully")
+                end
+            else
+                service.speak("Text copied to clipboard successfully")
+            end
+            
+            lastCleanText, lastSettingsHash = cleanText, currentSettings
+        end)
+    end
+
+    btnClear.onClick = function() 
+        local currentBoxText = tostring(editBox.getText())
+        if currentBoxText == "" then 
+            service.speak("Text box is already empty")
+            return 
+        end
+        
+        editBox.setText("")
+        totalDots, totalCommas, totalLines, totalEmojis, totalNumbers, totalSymbols = 0, 0, 0, 0, 0, 0
+        lastCleanText, lastSettingsHash = "", ""
+        sessionReported = {emoji=false, num=false, sym=false, dot=false, comma=false, line=false}
+        removedStatusText.setText("Removed 0 symbols 0 dots 0 commas 0 lines 0 numbers 0 emojis")
+        service.speak("Cleared and stats reset successfully") 
+    end
+
+    btnAbout.onClick = function()
+        local aboutMsg = "This extension is developed by A BROTHERS TEAM to help you clean your text easily. It is a very simple and powerful extension that removes all unwanted symbols, emojis, and numbers from your sentences. Sometimes text looks very messy with too many dots, commas, or icons, and this extension makes it clean and professional with just one click. It uses a smart system that remembers what it has already cleaned, so it only tells you about new things. Our team created this extension for people who want high-quality text without any manual work. Thank you for using our extension."
+        local adb = AlertDialog.Builder(service)
+        adb.setTitle("SYMBOLS REMOVER")
+        adb.setMessage(aboutMsg)
+        adb.setPositiveButton("OK", nil)
+        local ad = adb.create()
+        ad.getWindow().setType(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY)
+        ad.show()
+    end
+
+    btnHelp.onClick = function()
+        local waMsg = "Hello A BROTHERS TEAM, I have been using your 'Symbols Remover' extension and I am genuinely impressed by its seamless performance and precision. The advanced features and user-friendly interface make it a top-tier tool for text optimization. I would love to discuss its impressive functionality with you and share some detailed feedback on my experience."
+        local intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://api.whatsapp.com/send?phone=923477583735&text=" .. Uri.encode(waMsg)))
+        intent.setPackage("com.whatsapp").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        pcall(function() service.startActivity(intent) dialog.dismiss() end)
+    end
+
+    btnExit.onClick = function() dialog.dismiss() end
+end
+
+showSymbolRemover()
