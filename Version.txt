@@ -1,3 +1,1 @@
 0.4
-What's new in 0.4
-Stability fix is and startup sound a brothers and check in this version
