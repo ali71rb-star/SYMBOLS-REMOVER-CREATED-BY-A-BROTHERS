@@ -1,1 +1,2 @@
-Stability fixes
+​Updated the main heading to "symbols remover created by A brothers".
+​Relocated the "Help and Feedback" button to the bottom of the About dialog section.
