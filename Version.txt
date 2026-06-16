@@ -1,2 +1,1 @@
-0.6
-stability fixes
+0.6stability fixes
